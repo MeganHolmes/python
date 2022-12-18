@@ -9,7 +9,7 @@ def randomizeList(list):
 
 def checkLogisticRemoval(value):
     """Function has a 1/value chance of returning True, 0 always returns False"""
-    if value == 0:
+    if value <= 0:
         return False
     else:
         return (random.random() > 1/value)
