@@ -1,8 +1,5 @@
 """Call test functions in all subdirectories."""
 
-# --- Imports ------------------------------------------------------------------
-# System imports
-
 # Project imports
 import app.test.test
 
