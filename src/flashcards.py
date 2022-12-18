@@ -45,11 +45,18 @@ def init(path):
     if raw_list == None:
         return
 
+    examMode = input("Exam mode? (y/n): ")
+    if examMode == "y":
+        examMode = True
+
     flashcard_list = []
     for idx, raw_flashcard in enumerate(raw_list):
         card = translateListToFlashcard(raw_flashcard, idx)
-        if (app.random.checkLogisticRemoval(card.score) == False):
+        if examMode:
             flashcard_list.append(card)
+        else:
+            if (app.random.checkLogisticRemoval(card.score) == False):
+                flashcard_list.append(card)
 
     return flashcard_list
 
@@ -91,7 +98,10 @@ def flashcardsRun(flashcard, flashcard_list, data):
         if data.hardMode:
             flashcard.score = 0
         else:
-            flashcard.score -= 1
+            if flashcard.score > 0:
+                flashcard.score -= 1
+            else: # Technically not needed but just in case a score is negative
+                flashcard.score = 0
     else:
         error("Error: Invalid input")
 
