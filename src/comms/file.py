@@ -61,6 +61,7 @@ def updateCellInCSV(path, row, column, value):
         timeDiff = time.perf_counter() - startTime
         if timeDiff > 0.1:
             print("Updating CSV file took " + str(timeDiff) + "s. Rewite the updateCellInCSV function")
+            time.sleep(1)
     else:
         print("Error: File is not a CSV file")
 
