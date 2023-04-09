@@ -3,7 +3,7 @@
 
 class entity:
     """This class implements an entity."""
-    def __init__(self, x, y, r, mode, color='black'):
+    def __init__(self, x, y, r, mode, map, color='black'):
         """Constructor for the entity class."""
         self.x = x
         self.y = y
@@ -13,6 +13,7 @@ class entity:
         self.id = None
         self.mode = mode
         self.maxSpeed = 10
+        self.map = map
 
     def __del__(self):
         """Destructor for the entity class."""

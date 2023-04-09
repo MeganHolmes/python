@@ -48,10 +48,17 @@ def init(path):
     examMode = input("Exam mode? (y/n): ")
     if examMode == "y":
         examMode = True
+    else:
+        examMode = False
 
     flashcard_list = []
     for idx, raw_flashcard in enumerate(raw_list):
         card = translateListToFlashcard(raw_flashcard, idx)
+
+        # Skip cards that are empty
+        if card.question == "":
+            continue
+
         if examMode:
             flashcard_list.append(card)
         else:
@@ -65,8 +72,11 @@ def translateListToFlashcard(raw_list, idx):
     length = len(raw_list)
     card = Flashcard(raw_list[0], raw_list[1], 0, idx)
 
-    if length == 3:
+    if raw_list[2] != "":
         card.score = int(raw_list[2])
+    else:
+        if raw_list[0] != "":
+            card.score = 0
 
     return card
 
