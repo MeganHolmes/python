@@ -4,7 +4,7 @@ import sys
 
 # Import Qt packages
 from PyQt6.QtWidgets import (QApplication, QWidget, QLabel, QPushButton,
-                             QCheckBox, QHBoxLayout, QVBoxLayout, QMainWindow, QFileDialog)
+                             QCheckBox, QHBoxLayout, QVBoxLayout, QMainWindow, QFileDialog, QTextEdit)
 
 from PyQt6.QtCore import Qt
 from PyQt6.QtGui import QIcon
@@ -21,6 +21,7 @@ class ManagerWindow(QMainWindow):
         self.initBasicParameters()
         self.setUpCheckboxes()
         self.setUpButtons()
+        self.setUpConsole()
         self.arrangeContainers()
 
         self.show() # Display the window on the screen
@@ -63,24 +64,31 @@ class ManagerWindow(QMainWindow):
         self.checkboxContainer.addWidget(checkbox1)
         self.checkboxContainer.addWidget(checkbox2)
 
+    def setUpConsole(self):
+        self.console = QTextEdit(self)
+        self.console.setReadOnly(True)
+        # self.console.setAcceptRichText(False)
+        # self.console.setVerticalScrollBarPolicy(Qt.ScrollBarPolicy. ScrollBarAlwaysOn)
+
     def arrangeContainers(self):
         self.verticalContainer = QVBoxLayout()
         self.verticalContainer.addLayout(self.checkboxContainer)
         self.verticalContainer.addLayout(self.buttonContainer)
+        self.verticalContainer.addWidget(self.console)
         self.mainContainer.setLayout(self.verticalContainer)
         self.setCentralWidget(self.mainContainer)
 
     def buttonClicked(self):
         # Placeholder
-        print(f"Button Clicked")
+        self.console.append("Button Clicked")
 
     def checkboxTrigger(self):
         # Placeholder
-        print(f"CB Triggered")
+        self.console.append("Checkbox Triggered")
 
     def setSyncFolder(self):
         self.sync_path = QFileDialog.getExistingDirectory(self)
-        print(self.sync_path)
+        self.console.append(self.sync_path)
 
 
 # Run the program
