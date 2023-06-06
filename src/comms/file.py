@@ -1,6 +1,7 @@
 """Module providing operations on files"""
 import csv
 import time
+import os
 from logging import error
 
 def openFile(path, writeAccess):
@@ -78,3 +79,24 @@ def deleteEmptyLines(path):
         else:
             file.write(line)
     file.close()
+
+def extractRawData(path):
+    try:
+        with open(path, 'r') as file:
+            raw_data = file.read()
+        return raw_data
+    except FileNotFoundError:
+        print(f"File '{path}' not found.")
+        return None
+    except IOError:
+        print(f"Error reading file '{path}'.")
+        return None
+
+def getFilesInDirectory(directory_path):
+    file_list = []
+    for root, dirs, files in os.walk(directory_path):
+        for file in files:
+            file_path = os.path.join(root, file)
+            relative_path = os.path.relpath(file_path, directory_path)
+            file_list.append(relative_path)
+    return file_list

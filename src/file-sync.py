@@ -1,5 +1,6 @@
 
 # Import general packages
+from __future__ import absolute_import
 import sys
 
 # Import Qt packages
@@ -10,6 +11,7 @@ from PyQt6.QtCore import Qt
 from PyQt6.QtGui import QIcon
 
 # Import project files
+import comms.file
 
 class ManagerWindow(QMainWindow):
     def __init__(self):
@@ -42,16 +44,15 @@ class ManagerWindow(QMainWindow):
     def setUpButtons(self):
         syncFolderButton = QPushButton("Set Sync Folder", self)
         syncFolderButton.clicked.connect(self.setSyncFolder)
+        collectFilesButton = QPushButton("Collect Files", self)
+        collectFilesButton.clicked.connect(self.collectFiles)
 
-        button1 = QPushButton("Option 1", self)
-        button1.clicked.connect(self.buttonClicked)
         button2 = QPushButton("Option 2", self)
         button2.clicked.connect(self.buttonClicked)
-        button2.setEnabled(False)
 
         self.buttonContainer = QHBoxLayout()
         self.buttonContainer.addWidget(syncFolderButton)
-        self.buttonContainer.addWidget(button1)
+        self.buttonContainer.addWidget(collectFilesButton)
         self.buttonContainer.addWidget(button2)
 
     def setUpCheckboxes(self):
@@ -88,7 +89,22 @@ class ManagerWindow(QMainWindow):
 
     def setSyncFolder(self):
         self.sync_path = QFileDialog.getExistingDirectory(self)
-        self.console.append(self.sync_path)
+        if self.sync_path == "":
+            self.console.append("No path selected")
+        else:
+            self.console.append("Path selected: " + self.sync_path)
+
+    def collectFiles(self):
+        if hasattr(self, 'sync_path'):
+            if self.sync_path != "":
+                self.allFiles = comms.file.getFilesInDirectory(self.sync_path)
+                if self.allFiles is not []:
+                    for file in self.allFiles:
+                        self.console.append(file)
+                else:
+                    self.console.append("No files found")
+        else:
+            self.console.append("Sync path not specified")
 
 
 # Run the program
