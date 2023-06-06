@@ -16,6 +16,8 @@ import comms.file
 class ManagerWindow(QMainWindow):
     def __init__(self):
         super().__init__()
+        self.primarySyncPath = ""
+        self.secondarySyncPath = ""
         self.initializeUI()
 
     def initializeUI(self):
@@ -42,28 +44,32 @@ class ManagerWindow(QMainWindow):
         self.setWindowIcon(QIcon('../assets/WWR_logo.png')) # TODO: Fix this
 
     def setUpButtons(self):
-        syncFolderButton = QPushButton("Set Sync Folder", self)
-        syncFolderButton.clicked.connect(self.setSyncFolder)
-        collectFilesButton = QPushButton("Collect Files", self)
-        collectFilesButton.clicked.connect(self.collectFiles)
+        primarySyncFolderButton = QPushButton("Set Primary Local Sync Folder", self)
+        primarySyncFolderButton.clicked.connect(self.setPrimarySyncFolder)
 
-        button2 = QPushButton("Option 2", self)
-        button2.clicked.connect(self.buttonClicked)
+        collectFilesButton = QPushButton("Collect Files", self)
+        collectFilesButton.clicked.connect(self.collectFilesTrigger)
+
+        self.secondarySyncFolderButton = QPushButton("Set Secondary Local Sync Folder", self)
+        self.secondarySyncFolderButton.clicked.connect(self.setSecondarySyncFolder)
+        self.secondarySyncFolderButton.setEnabled(False)
+
+        clearConsoleButton = QPushButton("Clear Console", self)
+        clearConsoleButton.clicked.connect(self.clearConsoleTrigger)
+
 
         self.buttonContainer = QHBoxLayout()
-        self.buttonContainer.addWidget(syncFolderButton)
+        self.buttonContainer.addWidget(primarySyncFolderButton)
         self.buttonContainer.addWidget(collectFilesButton)
-        self.buttonContainer.addWidget(button2)
+        self.buttonContainer.addWidget(self.secondarySyncFolderButton)
+        self.buttonContainer.addWidget(clearConsoleButton)
 
     def setUpCheckboxes(self):
-        checkbox1 = QCheckBox("Test box 1", self)
-        checkbox1.toggled.connect(self.checkboxTrigger)
-        checkbox2 = QCheckBox("Test box 2", self)
-        checkbox2.toggled.connect(self.checkboxTrigger)
+        self.localModeCheckbox = QCheckBox("Local Mode", self)
+        self.localModeCheckbox.toggled.connect(self.localModeTrigger)
 
         self.checkboxContainer = QHBoxLayout()
-        self.checkboxContainer.addWidget(checkbox1)
-        self.checkboxContainer.addWidget(checkbox2)
+        self.checkboxContainer.addWidget(self.localModeCheckbox)
 
     def setUpConsole(self):
         self.console = QTextEdit(self)
@@ -79,32 +85,48 @@ class ManagerWindow(QMainWindow):
         self.mainContainer.setLayout(self.verticalContainer)
         self.setCentralWidget(self.mainContainer)
 
-    def buttonClicked(self):
-        # Placeholder
-        self.console.append("Button Clicked")
-
-    def checkboxTrigger(self):
-        # Placeholder
-        self.console.append("Checkbox Triggered")
-
-    def setSyncFolder(self):
-        self.sync_path = QFileDialog.getExistingDirectory(self)
-        if self.sync_path == "":
+    def setPrimarySyncFolder(self):
+        self.primarySyncPath = QFileDialog.getExistingDirectory(self)
+        if self.primarySyncPath == "":
             self.console.append("No path selected")
         else:
-            self.console.append("Path selected: " + self.sync_path)
+            self.console.append("Path selected: " + self.primarySyncPath)
 
-    def collectFiles(self):
-        if hasattr(self, 'sync_path'):
-            if self.sync_path != "":
-                self.allFiles = comms.file.getFilesInDirectory(self.sync_path)
-                if self.allFiles is not []:
-                    for file in self.allFiles:
-                        self.console.append(file)
-                else:
-                    self.console.append("No files found")
+    def setSecondarySyncFolder(self):
+        self.secondarySyncPath = QFileDialog.getExistingDirectory(self)
+        if self.secondarySyncPath == "":
+            self.console.append("No path selected")
         else:
-            self.console.append("Sync path not specified")
+            self.console.append("Path selected: " + self.secondarySyncPath)
+
+    def collectFilesTrigger(self):
+        if self.primarySyncPath != "":
+            self.allPrimaryFiles = comms.file.getFilesInDirectory(self.primarySyncPath)
+            self.console.append("----- Inside " + self.primarySyncPath + " -----")
+            self.displayList(self.allPrimaryFiles)
+        if self.secondarySyncPath != "" and self.localModeCheckbox.isChecked():
+            self.allSecondaryFiles = comms.file.getFilesInDirectory(self.secondarySyncPath)
+            self.console.append("----- Inside " + self.secondarySyncPath + " -----")
+            self.displayList(self.allSecondaryFiles)
+
+    def displayList(self, list):
+        if list is not []:
+            for item in list:
+                self.console.append(item)
+        else:
+            self.console.append("No items found")
+
+    def localModeTrigger(self):
+        if self.localModeCheckbox.isChecked():
+            self.console.append("Local mode enabled")
+            self.secondarySyncFolderButton.setEnabled(True)
+        else:
+            self.console.append("Local mode disabled")
+            self.secondarySyncFolderButton.setEnabled(False)
+
+    def clearConsoleTrigger(self):
+        self.console.clear()
+
 
 
 # Run the program
