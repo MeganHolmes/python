@@ -1,5 +1,6 @@
 
 # Import general packages
+from __future__ import absolute_import
 import sys
 
 # Import Qt packages
@@ -10,10 +11,14 @@ from PyQt6.QtCore import Qt
 from PyQt6.QtGui import QIcon
 
 # Import project files
+import comms.file
+from app.rsync import Rsync
 
-class ManagerWindow(QMainWindow):
+class FileSyncGUI(QMainWindow):
     def __init__(self):
         super().__init__()
+        self.primaryRsyncManager = Rsync()
+        self.secondaryRsyncManager = Rsync()
         self.initializeUI()
 
     def initializeUI(self):
@@ -40,29 +45,40 @@ class ManagerWindow(QMainWindow):
         self.setWindowIcon(QIcon('../assets/WWR_logo.png')) # TODO: Fix this
 
     def setUpButtons(self):
-        syncFolderButton = QPushButton("Set Sync Folder", self)
-        syncFolderButton.clicked.connect(self.setSyncFolder)
+        self.primarySyncFolderButton = QPushButton("Set Primary Local Sync Folder", self)
+        self.primarySyncFolderButton.clicked.connect(self.setSyncFolder)
 
-        button1 = QPushButton("Option 1", self)
-        button1.clicked.connect(self.buttonClicked)
-        button2 = QPushButton("Option 2", self)
-        button2.clicked.connect(self.buttonClicked)
-        button2.setEnabled(False)
+        self.secondarySyncFolderButton = QPushButton("Set Secondary Local Sync Folder", self)
+        self.secondarySyncFolderButton.clicked.connect(self.setSyncFolder)
+        self.secondarySyncFolderButton.setEnabled(False)
+
+        discoverFilesButton = QPushButton("Discover Files", self)
+        discoverFilesButton.clicked.connect(self.discoverFilesTrigger)
+
+        loadFilesButton = QPushButton("Load Files", self)
+        loadFilesButton.clicked.connect(self.loadFilesTrigger)
+
+        prepareFilesButton = QPushButton("Prepare Files", self)
+        prepareFilesButton.clicked.connect(self.prepareFilesTrigger)
+
+        clearConsoleButton = QPushButton("Clear Console", self)
+        clearConsoleButton.clicked.connect(self.clearConsoleTrigger)
+
 
         self.buttonContainer = QHBoxLayout()
-        self.buttonContainer.addWidget(syncFolderButton)
-        self.buttonContainer.addWidget(button1)
-        self.buttonContainer.addWidget(button2)
+        self.buttonContainer.addWidget(self.primarySyncFolderButton)
+        self.buttonContainer.addWidget(self.secondarySyncFolderButton)
+        self.buttonContainer.addWidget(discoverFilesButton)
+        self.buttonContainer.addWidget(loadFilesButton)
+        self.buttonContainer.addWidget(prepareFilesButton)
+        self.buttonContainer.addWidget(clearConsoleButton)
 
     def setUpCheckboxes(self):
-        checkbox1 = QCheckBox("Test box 1", self)
-        checkbox1.toggled.connect(self.checkboxTrigger)
-        checkbox2 = QCheckBox("Test box 2", self)
-        checkbox2.toggled.connect(self.checkboxTrigger)
+        self.localModeCheckbox = QCheckBox("Local Mode", self)
+        self.localModeCheckbox.toggled.connect(self.localModeTrigger)
 
         self.checkboxContainer = QHBoxLayout()
-        self.checkboxContainer.addWidget(checkbox1)
-        self.checkboxContainer.addWidget(checkbox2)
+        self.checkboxContainer.addWidget(self.localModeCheckbox)
 
     def setUpConsole(self):
         self.console = QTextEdit(self)
@@ -78,21 +94,61 @@ class ManagerWindow(QMainWindow):
         self.mainContainer.setLayout(self.verticalContainer)
         self.setCentralWidget(self.mainContainer)
 
-    def buttonClicked(self):
-        # Placeholder
-        self.console.append("Button Clicked")
-
-    def checkboxTrigger(self):
-        # Placeholder
-        self.console.append("Checkbox Triggered")
-
     def setSyncFolder(self):
-        self.sync_path = QFileDialog.getExistingDirectory(self)
-        self.console.append(self.sync_path)
+        syncPath = QFileDialog.getExistingDirectory(self)
+        if syncPath == "":
+            self.console.append("No path selected")
+        else:
+            self.console.append("Path selected: " + syncPath)
+            if app.sender() == self.primarySyncFolderButton:
+                self.primaryRsyncManager.setRootPath(syncPath)
+            elif app.sender() == self.primarySyncFolderButton:
+                self.secondaryRsyncManager.setRootPath(syncPath)
+            else:
+                self.console.append("ERROR: Unknown sender")
+
+
+    def discoverFilesTrigger(self):
+        if self.primaryRsyncManager.getRootPath() != "":
+            self.console.append("Discovering files for " + self.primaryRsyncManager.getRootPath())
+            self.primaryRsyncManager.discoverFiles()
+        if self.secondaryRsyncManager.getRootPath() != "" and self.localModeCheckbox.isChecked():
+            self.secondaryRsyncManager.discoverFiles()
+            self.console.append("Discovering files for " + self.secondaryRsyncManager.getRootPath())
+
+    def localModeTrigger(self):
+        if self.localModeCheckbox.isChecked():
+            self.console.append("Local mode enabled")
+            self.secondarySyncFolderButton.setEnabled(True)
+        else:
+            self.console.append("Local mode disabled")
+            self.secondarySyncFolderButton.setEnabled(False)
+
+    def clearConsoleTrigger(self):
+        self.console.clear()
+
+    def prepareFilesTrigger(self):
+        if self.primaryRsyncManager.areFilesPresent():
+            self.console.append("Preparing Primary files")
+            self.primaryRsyncManager.prepareAllFiles()
+
+        if self.secondaryRsyncManager.areFilesPresent():
+            self.console.append("Preparing Secondary files")
+            self.secondaryRsyncManager.prepareAllFiles()
+
+    def loadFilesTrigger(self):
+        if self.primaryRsyncManager.areFilesPresent():
+            self.console.append("Loading Primary files")
+            self.primaryRsyncManager.loadFilesIntoMemory()
+
+        if self.secondaryRsyncManager.areFilesPresent():
+            self.console.append("Loading Secondary files")
+            self.secondaryRsyncManager.loadFilesIntoMemory()
+
 
 
 # Run the program
 if __name__ == '__main__':
     app = QApplication(sys.argv)
-    window = ManagerWindow()
+    window = FileSyncGUI()
     sys.exit(app.exec())
