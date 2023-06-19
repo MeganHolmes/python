@@ -12,13 +12,13 @@ from PyQt6.QtGui import QIcon
 
 # Import project files
 import comms.file
-from app.rsync import Rsync
+from file_sync.file_manager import FileManager, FileInfo
 
 class FileSyncGUI(QMainWindow):
     def __init__(self):
         super().__init__()
-        self.primaryRsyncManager = Rsync()
-        self.secondaryRsyncManager = Rsync()
+        self.primaryFileManager = FileManager()
+        self.secondaryFileManager = FileManager()
         self.initializeUI()
 
     def initializeUI(self):
@@ -55,11 +55,8 @@ class FileSyncGUI(QMainWindow):
         discoverFilesButton = QPushButton("Discover Files", self)
         discoverFilesButton.clicked.connect(self.discoverFilesTrigger)
 
-        loadFilesButton = QPushButton("Load Files", self)
-        loadFilesButton.clicked.connect(self.loadFilesTrigger)
-
-        prepareFilesButton = QPushButton("Prepare Files", self)
-        prepareFilesButton.clicked.connect(self.prepareFilesTrigger)
+        startSyncButton = QPushButton("Start Sync", self)
+        startSyncButton.clicked.connect(self.startSyncTrigger)
 
         clearConsoleButton = QPushButton("Clear Console", self)
         clearConsoleButton.clicked.connect(self.clearConsoleTrigger)
@@ -69,16 +66,18 @@ class FileSyncGUI(QMainWindow):
         self.buttonContainer.addWidget(self.primarySyncFolderButton)
         self.buttonContainer.addWidget(self.secondarySyncFolderButton)
         self.buttonContainer.addWidget(discoverFilesButton)
-        self.buttonContainer.addWidget(loadFilesButton)
-        self.buttonContainer.addWidget(prepareFilesButton)
+        self.buttonContainer.addWidget(startSyncButton)
         self.buttonContainer.addWidget(clearConsoleButton)
 
     def setUpCheckboxes(self):
         self.localModeCheckbox = QCheckBox("Local Mode", self)
         self.localModeCheckbox.toggled.connect(self.localModeTrigger)
 
+        self.verboseCheckbox = QCheckBox("Verbose", self)
+
         self.checkboxContainer = QHBoxLayout()
         self.checkboxContainer.addWidget(self.localModeCheckbox)
+        self.checkboxContainer.addWidget(self.verboseCheckbox)
 
     def setUpConsole(self):
         self.console = QTextEdit(self)
@@ -101,20 +100,29 @@ class FileSyncGUI(QMainWindow):
         else:
             self.console.append("Path selected: " + syncPath)
             if app.sender() == self.primarySyncFolderButton:
-                self.primaryRsyncManager.setRootPath(syncPath)
-            elif app.sender() == self.primarySyncFolderButton:
-                self.secondaryRsyncManager.setRootPath(syncPath)
+                self.primaryFileManager.setRootPath(syncPath)
+            elif app.sender() == self.secondarySyncFolderButton:
+                self.secondaryFileManager.setRootPath(syncPath)
             else:
                 self.console.append("ERROR: Unknown sender")
 
 
     def discoverFilesTrigger(self):
-        if self.primaryRsyncManager.getRootPath() != "":
-            self.console.append("Discovering files for " + self.primaryRsyncManager.getRootPath())
-            self.primaryRsyncManager.discoverFiles()
-        if self.secondaryRsyncManager.getRootPath() != "" and self.localModeCheckbox.isChecked():
-            self.secondaryRsyncManager.discoverFiles()
-            self.console.append("Discovering files for " + self.secondaryRsyncManager.getRootPath())
+        if self.primaryFileManager.getRootPath() != "":
+            self.console.append("Discovering files for " + self.primaryFileManager.getRootPath())
+            self.primaryFileManager.discoverFiles()
+
+            if self.verboseCheckbox.isChecked():
+                self.console.append("Files Found:")
+                self.addListToConsole(self.primaryFileManager.getAllFiles())
+
+        if self.secondaryFileManager.getRootPath() != "" and self.localModeCheckbox.isChecked():
+            self.secondaryFileManager.discoverFiles()
+            self.console.append("Discovering files for " + self.secondaryFileManager.getRootPath())
+
+            if self.verboseCheckbox.isChecked():
+                self.console.append("Files Found:")
+                self.addListToConsole(self.secondaryFileManager.getAllFiles())
 
     def localModeTrigger(self):
         if self.localModeCheckbox.isChecked():
@@ -124,27 +132,46 @@ class FileSyncGUI(QMainWindow):
             self.console.append("Local mode disabled")
             self.secondarySyncFolderButton.setEnabled(False)
 
+    def startSyncTrigger(self):
+        if self.localModeCheckbox.isChecked():
+            self.console.append("Starting sync. Getting files from secondary manager")
+            secondaryFiles = self.secondaryFileManager.getAllFiles()
+
+            self.console.append("Comparing files with primary manager")
+            filesNeededFromSecondary = self.primaryFileManager.compareFiles(secondaryFiles)
+
+            if self.verboseCheckbox.isChecked():
+                self.console.append("Files needing transfer from secondary manager:")
+                self.addListToConsole(filesNeededFromSecondary)
+
+            # self.console.append("Transferring secondary files")
+            # primary receives files
+
+            self.console.append("Getting files from primary manager")
+            primaryFiles = self.primaryFileManager.getAllFiles()
+
+            self.console.append("Comparing files with secondary manager")
+            filesNeededFromPrimary = self.secondaryFileManager.compareFiles(primaryFiles)
+
+            if self.verboseCheckbox.isChecked():
+                self.console.append("Files needing transfer from primary manager:")
+                self.addListToConsole(filesNeededFromPrimary)
+
+            # self.console.append("Transferring primary files")
+            #secondary receives files
+
+        else:
+            self.console.append("Remote sync isn't implemented yet")
+
     def clearConsoleTrigger(self):
         self.console.clear()
 
-    def prepareFilesTrigger(self):
-        if self.primaryRsyncManager.areFilesPresent():
-            self.console.append("Preparing Primary files")
-            self.primaryRsyncManager.prepareAllFiles()
-
-        if self.secondaryRsyncManager.areFilesPresent():
-            self.console.append("Preparing Secondary files")
-            self.secondaryRsyncManager.prepareAllFiles()
-
-    def loadFilesTrigger(self):
-        if self.primaryRsyncManager.areFilesPresent():
-            self.console.append("Loading Primary files")
-            self.primaryRsyncManager.loadFilesIntoMemory()
-
-        if self.secondaryRsyncManager.areFilesPresent():
-            self.console.append("Loading Secondary files")
-            self.secondaryRsyncManager.loadFilesIntoMemory()
-
+    def addListToConsole(self, list):
+        if list is not None:
+            for item in list:
+                self.console.append("   " + item.getRelativePath())
+        else:
+            self.console.append("   Empty List")
 
 
 # Run the program
