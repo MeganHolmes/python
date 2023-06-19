@@ -107,3 +107,6 @@ def extractMetadata(path):
     fileSize = file_stats.st_size
 
     return fileSize, creationTime, lastModificationTime, lastAccessTime
+
+def getRelativePath(absolutePath, rootPath):
+    return os.path.relpath(absolutePath, rootPath)
