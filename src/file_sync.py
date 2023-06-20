@@ -126,42 +126,9 @@ class FileSyncGUI(QMainWindow):
 
     def localModeTrigger(self):
         if self.localModeCheckbox.isChecked():
-            self.console.append("Local mode enabled")
             self.secondarySyncFolderButton.setEnabled(True)
         else:
-            self.console.append("Local mode disabled")
             self.secondarySyncFolderButton.setEnabled(False)
-
-    def startSyncTrigger(self):
-        if self.localModeCheckbox.isChecked():
-            self.console.append("Starting sync. Getting files from secondary manager")
-            secondaryFiles = self.secondaryFileManager.getAllFiles()
-
-            self.console.append("Comparing files with primary manager")
-            filesNeededFromSecondary = self.primaryFileManager.compareFiles(secondaryFiles)
-
-            if self.verboseCheckbox.isChecked():
-                self.console.append("Files needing transfer from secondary manager:")
-                self.addListToConsole(filesNeededFromSecondary)
-
-            # self.console.append("Transferring secondary files")
-            # primary receives files
-
-            self.console.append("Getting files from primary manager")
-            primaryFiles = self.primaryFileManager.getAllFiles()
-
-            self.console.append("Comparing files with secondary manager")
-            filesNeededFromPrimary = self.secondaryFileManager.compareFiles(primaryFiles)
-
-            if self.verboseCheckbox.isChecked():
-                self.console.append("Files needing transfer from primary manager:")
-                self.addListToConsole(filesNeededFromPrimary)
-
-            # self.console.append("Transferring primary files")
-            #secondary receives files
-
-        else:
-            self.console.append("Remote sync isn't implemented yet")
 
     def clearConsoleTrigger(self):
         self.console.clear()
@@ -172,6 +139,49 @@ class FileSyncGUI(QMainWindow):
                 self.console.append("   " + item.getRelativePath())
         else:
             self.console.append("   Empty List")
+
+    def startSyncTrigger(self):
+        if self.localModeCheckbox.isChecked():
+            self.performLocalSync()
+        else:
+            self.console.append("Remote sync isn't implemented yet")
+
+    def performLocalSync(self):
+        self.console.append("Starting local sync. Getting files from secondary manager")
+        secondaryFiles = self.secondaryFileManager.getAllFiles()
+
+        self.console.append("Comparing files with primary manager")
+        filesNeededFromSecondary = self.primaryFileManager.compareFiles(secondaryFiles)
+
+        if self.verboseCheckbox.isChecked():
+            self.console.append("Files needing transfer from secondary manager:")
+            self.addListToConsole(filesNeededFromSecondary)
+
+        self.console.append("Transferring secondary files")
+        for neededFile in filesNeededFromSecondary:
+            destinationPath = comms.file.concatenatePaths(self.primaryFileManager.getRootPath(), neededFile.getRelativePath())
+            comms.file.copyFile(neededFile.getAbsolutePath(), destinationPath)
+
+            if self.verboseCheckbox.isChecked():
+                self.console.append("   " + neededFile.getRelativePath() + " Copied")
+
+        self.console.append("Getting files from primary manager")
+        primaryFiles = self.primaryFileManager.getAllFiles()
+
+        self.console.append("Comparing files with secondary manager")
+        filesNeededFromPrimary = self.secondaryFileManager.compareFiles(primaryFiles)
+
+        if self.verboseCheckbox.isChecked():
+            self.console.append("Files needing transfer from primary manager:")
+            self.addListToConsole(filesNeededFromPrimary)
+
+        self.console.append("Transferring primary files")
+        for neededFile in filesNeededFromPrimary:
+            destinationPath = comms.file.concatenatePaths(self.secondaryFileManager.getRootPath(), neededFile.getRelativePath())
+            comms.file.copyFile(neededFile.getAbsolutePath(), destinationPath)
+
+            if self.verboseCheckbox.isChecked():
+                self.console.append("   " + neededFile.getRelativePath() + " Copied")
 
 
 # Run the program
