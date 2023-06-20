@@ -1,3 +1,5 @@
+# This module handles direction interaction with the files of the file sync program
+
 
 # Import general packages
 from __future__ import absolute_import
