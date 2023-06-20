@@ -3,6 +3,8 @@ import csv
 import time
 import os
 from logging import error
+import shutil
+import pickle
 
 def openFile(path, writeAccess):
     """Opens a file and returns the file object"""
@@ -110,3 +112,39 @@ def extractMetadata(path):
 
 def getRelativePath(absolutePath, rootPath):
     return os.path.relpath(absolutePath, rootPath)
+
+def concatenatePaths(absolute_path, relative_path):
+    return os.path.join(absolute_path, relative_path)
+
+def copyFile(source_path, destination_path):
+    try:
+        shutil.copy2(source_path, destination_path)
+        print("File copied successfully!")
+    except FileNotFoundError:
+        print("Source file not found.")
+    except PermissionError:
+        print("Permission denied. Unable to copy the file.")
+    except IOError as e:
+        print(f"An error occurred while copying the file: {e}")
+
+def storeDataAsPickleFile(path, filename, data):
+    file_name_with_extension = addExtensionIfNeeded(filename, ".pickle")
+    file_path = os.path.join(path, file_name_with_extension)
+
+    with open(file_path, 'wb') as file:
+        pickle.dump(data, file)
+
+    print(f"Data successfully stored as a pickle file: {file_path}")
+
+
+def loadDataFromPickleFile(file_path):
+    with open(file_path, 'rb') as file:
+        data = pickle.load(file)
+    return data
+
+
+def addExtensionIfNeeded(filename, extension):
+    _, ext = os.path.splitext(filename)
+    if ext != extension:
+        filename += extension
+    return filename
