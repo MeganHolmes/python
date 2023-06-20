@@ -11,8 +11,9 @@ from file_sync.fileManager import FileManager
 class FileSyncController:
     def __init__(self, guiReference):
         self.gui = guiReference
-        self.primaryFileManager = FileManager()
-        self.secondaryFileManager = FileManager()
+        self.installLocation = "%USERPROFILE%\AppData\Local\Focus\File Sync" # TODO: Do this smarter
+        self.primaryFileManager = FileManager(self.installLocation, "Primary")
+        self.secondaryFileManager = FileManager(self.installLocation, "Secondary")
         self.localMode = False
 
     def updateLocalMode(self, newMode):
@@ -39,7 +40,8 @@ class FileSyncController:
             self.gui.verboseAppendToConsole("Files Found:")
             self.gui.addListToConsole(self.secondaryFileManager.getAllFiles())
 
-    def performLocalSync(self):
+    def performLocalSync(self): # TODO: Replace with a state machine
+        # This function is mostly for testing sync algorithms independent from networking
         self.gui.appendToConsole("Starting local sync. Getting files from secondary manager")
         secondaryFiles = self.secondaryFileManager.getAllFiles()
 
