@@ -138,8 +138,12 @@ def storeDataAsPickleFile(path, filename, data):
 
 
 def loadDataFromPickleFile(file_path):
-    with open(file_path, 'rb') as file:
-        data = pickle.load(file)
+    file_name_with_extension = addExtensionIfNeeded(file_path, ".pickle")
+    if os.path.exists(file_name_with_extension):
+        with open(file_name_with_extension, 'rb') as file:
+            data = pickle.load(file)
+    else:
+        data = []
     return data
 
 
@@ -148,3 +152,14 @@ def addExtensionIfNeeded(filename, extension):
     if ext != extension:
         filename += extension
     return filename
+
+def deleteFile(path):
+    os.remove(path)
+
+def deletePickleFile(path):
+    file_name_with_extension = addExtensionIfNeeded(path, ".pickle")
+    if os.path.exists(file_name_with_extension):
+        os.remove(file_name_with_extension)
+        print(f"File successfully deleted: {file_name_with_extension}")
+    else:
+        print(f"File not found: {file_name_with_extension}")
