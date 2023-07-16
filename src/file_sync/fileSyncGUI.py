@@ -50,22 +50,26 @@ class FileSyncGUI(QMainWindow):
         self.secondarySyncFolderButton.clicked.connect(self.setSyncFolder)
         self.secondarySyncFolderButton.setEnabled(False)
 
-        discoverFilesButton = QPushButton("Discover Files", self)
-        discoverFilesButton.clicked.connect(self.controller.discoverFilesTrigger)
-
-        startSyncButton = QPushButton("Start Sync", self)
-        startSyncButton.clicked.connect(self.startSyncTrigger)
+        startSyncButton = QPushButton("Run", self)
+        startSyncButton.clicked.connect(self.runTrigger)
 
         clearConsoleButton = QPushButton("Clear Console", self)
         clearConsoleButton.clicked.connect(self.clearConsoleTrigger)
+
+        resetButton = QPushButton("Reset", self)
+        resetButton.clicked.connect(self.controller.reset)
+
+        deleteSavedDataButton = QPushButton("Delete Saved Data", self)
+        deleteSavedDataButton.clicked.connect(self.controller.deleteSavedData)
 
 
         self.buttonContainer = QHBoxLayout()
         self.buttonContainer.addWidget(self.primarySyncFolderButton)
         self.buttonContainer.addWidget(self.secondarySyncFolderButton)
-        self.buttonContainer.addWidget(discoverFilesButton)
         self.buttonContainer.addWidget(startSyncButton)
         self.buttonContainer.addWidget(clearConsoleButton)
+        self.buttonContainer.addWidget(resetButton)
+        self.buttonContainer.addWidget(deleteSavedDataButton)
 
     def setUpCheckboxes(self):
         self.localModeCheckbox = QCheckBox("Local Mode", self)
@@ -123,9 +127,9 @@ class FileSyncGUI(QMainWindow):
             else:
                 self.console.append("   Empty List")
 
-    def startSyncTrigger(self):
+    def runTrigger(self):
         if self.localModeCheckbox.isChecked():
-            self.controller.performLocalSync()
+            self.controller.runLocal()
         else:
             self.console.append("Remote sync isn't implemented yet")
 
