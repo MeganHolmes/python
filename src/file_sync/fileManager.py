@@ -6,7 +6,7 @@ from __future__ import absolute_import
 from datetime import datetime
 
 # Import project files
-import comms.file
+import IO.file
 
 class FileManager():
     def __init__(self, installPath, managerName):
@@ -45,11 +45,11 @@ class FileManager():
 
     def saveFile(self, secondPartOfName, data):
         filename = self.managerName + secondPartOfName
-        comms.file.storeDataAsPickleFile(self.installLocation, filename, data)
+        IO.file.storeDataAsPickleFile(self.installLocation, filename, data)
 
     def deleteFile(self, secondPartOfName):
         filename = self.managerName + secondPartOfName
-        comms.file.deletePickleFile(comms.file.concatenatePaths(self.installLocation, filename))
+        IO.file.deletePickleFile(IO.file.concatenatePaths(self.installLocation, filename))
 
     def deleteSavedData(self):
         self.deleteFile("DeletedFiles")
@@ -57,19 +57,19 @@ class FileManager():
 
     def discoverFiles(self):
         print("File Manager " + str(self.rootPath) + " Collecting files")
-        fileNames = comms.file.getFilesInDirectory(self.rootPath)
+        fileNames = IO.file.getFilesInDirectory(self.rootPath)
         for file in fileNames:
-            relativePath = comms.file.getRelativePath(file, self.rootPath)
+            relativePath = IO.file.getRelativePath(file, self.rootPath)
             self.allFiles.append(FileInfo(file, relativePath))
             print("Discovered " + relativePath)
 
     def compareAgainstLocalSave(self):
         print("Comparing against saved files from last run")
-        loadSavedPath = comms.file.concatenatePaths(self.installLocation, self.managerName + "SavedFiles")
-        loadDeletedPath = comms.file.concatenatePaths(self.installLocation, self.managerName + "DeletedFiles")
+        loadSavedPath = IO.file.concatenatePaths(self.installLocation, self.managerName + "SavedFiles")
+        loadDeletedPath = IO.file.concatenatePaths(self.installLocation, self.managerName + "DeletedFiles")
 
-        previousFiles = comms.file.loadDataFromPickleFile(loadSavedPath)
-        self.deletedFiles = comms.file.loadDataFromPickleFile(loadDeletedPath)
+        previousFiles = IO.file.loadDataFromPickleFile(loadSavedPath)
+        self.deletedFiles = IO.file.loadDataFromPickleFile(loadDeletedPath)
 
         missingFiles = self.compareFiles(previousFiles)
 
@@ -112,7 +112,7 @@ class FileManager():
                     if deletedFile.isFileNewestCopy(savedFile):
                         # The remote file is newer, so we need to delete the local file
                         print("Deleting " + savedFile.getRelativePath())
-                        comms.file.deleteFile(savedFile.getAbsolutePath())
+                        IO.file.deleteFile(savedFile.getAbsolutePath())
                         self.allFiles.remove(savedFile)
                         updateRequired = True
                     else:
@@ -135,7 +135,7 @@ class FileInfo():
     def __init__(self, absolutePath, relativePath):
         self.absolutePath = absolutePath
         self.relativePath = relativePath
-        self.fileSize, self.creationTime, self.lastModifiedTime, self.lastAccessedTime = comms.file.extractMetadata(absolutePath)
+        self.fileSize, self.creationTime, self.lastModifiedTime, self.lastAccessedTime = IO.file.extractMetadata(absolutePath)
 
     def __getstate__(self):
         # Return the entire object dictionary for serialization
