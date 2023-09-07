@@ -7,7 +7,7 @@ import time
 import os
 
 # Project Imports
-import comms.file
+import IO.file
 from file_sync.fileManager import FileManager
 
 class FileSyncController:
@@ -116,8 +116,8 @@ class FileSyncController:
 
         self.gui.appendToConsole("Transferring primary files")
         for neededFile in filesNeededFromPrimary:
-            destinationPath = comms.file.concatenatePaths(self.secondaryFileManager.getRootPath(), neededFile.getRelativePath())
-            comms.file.copyFile(neededFile.getAbsolutePath(), destinationPath)
+            destinationPath = IO.file.concatenatePaths(self.secondaryFileManager.getRootPath(), neededFile.getRelativePath())
+            IO.file.copyFile(neededFile.getAbsolutePath(), destinationPath)
 
             self.gui.verboseAppendToConsole("   " + neededFile.getRelativePath() + " Copied")
 
@@ -133,7 +133,7 @@ class FileSyncController:
 
         self.gui.appendToConsole("Transferring secondary files")
         for neededFile in filesNeededFromSecondary:
-            destinationPath = comms.file.concatenatePaths(self.primaryFileManager.getRootPath(), neededFile.getRelativePath())
-            comms.file.copyFile(neededFile.getAbsolutePath(), destinationPath)
+            destinationPath = IO.file.concatenatePaths(self.primaryFileManager.getRootPath(), neededFile.getRelativePath())
+            IO.file.copyFile(neededFile.getAbsolutePath(), destinationPath)
 
             self.gui.verboseAppendToConsole("   " + neededFile.getRelativePath() + " Copied")

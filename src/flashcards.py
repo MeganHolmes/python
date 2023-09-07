@@ -11,7 +11,7 @@ import os
 
 # Project imports
 
-import comms.file
+import IO.file
 import app.random
 
 # --- Constants ----------------------------------------------------------------
@@ -40,7 +40,7 @@ class FlashcardData:
 
 def init(path):
     """Prepares the flashcards program."""
-    raw_list = comms.file.getListFromCSV(path)
+    raw_list = IO.file.getListFromCSV(path)
 
     if raw_list == None:
         return
@@ -115,7 +115,7 @@ def flashcardsRun(flashcard, flashcard_list, data):
     else:
         error("Error: Invalid input")
 
-    comms.file.updateCellInCSV(data.path, flashcard.fileIdx, 2, flashcard.score)
+    IO.file.updateCellInCSV(data.path, flashcard.fileIdx, 2, flashcard.score)
 
 # --- Main ---------------------------------------------------------------------
 

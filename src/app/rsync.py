@@ -6,7 +6,7 @@ from __future__ import absolute_import
 import numpy
 
 # Import project files
-import comms.file
+import IO.file
 
 class Rsync():
     def __init__(self):
@@ -25,7 +25,7 @@ class Rsync():
 
     def discoverFiles(self):
         print("Rsync Manager " + str(self.rootPath) + "Collecting files")
-        rawFiles = comms.file.getFilesInDirectory(self.rootPath)
+        rawFiles = IO.file.getFilesInDirectory(self.rootPath)
         for file in rawFiles:
             self.allFiles.append(RsyncFile(file))
             print(file)
@@ -53,7 +53,7 @@ class RsyncFile():
         self.modulusValue = 2^16
 
     def loadFile(self):
-        raw_bytes = comms.file.extractRawData(self.absolutePath)
+        raw_bytes = IO.file.extractRawData(self.absolutePath)
         if raw_bytes is not None:
             self.raw_bytes = raw_bytes
 
