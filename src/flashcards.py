@@ -45,11 +45,7 @@ def init(path):
     if raw_list == None:
         return
 
-    examMode = input("Exam mode? (y/n): ")
-    if examMode == "y":
-        examMode = True
-    else:
-        examMode = False
+    examMode = input("Exam mode? (y/n): ") == "y"
 
     flashcard_list = []
     for idx, raw_flashcard in enumerate(raw_list):

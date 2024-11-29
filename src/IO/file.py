@@ -39,7 +39,7 @@ def getListFromCSV(path):
 
 def isFileCSV(path):
     """Checks if a file is a CSV file"""
-    return path.endswith(".csv")
+    return path.endswith(".csv") or path.endswith(".CSV")
 
 def updateCellInCSV(path, row, column, value):
     """Updates a cell in a CSV file"""
