@@ -99,7 +99,7 @@ def determine_account_type(row):
 
     if row[COL_NUMBER_FOR_RBC_ACCOUNT_TYPE] in ["Chequing", "Savings", "MasterCard"]:
         type = "RBC CAD"
-    elif row[COL_NUMBER_FOR_PP_TIMEZONE] == "PDT":
+    elif row[COL_NUMBER_FOR_PP_TIMEZONE] == "PDT" or "PST":
         type = "PayPal"
     elif row[COL_NUMBER_FOR_RBC_USD_CREDIT_DETERMINATION] == "CREDITCARD":
         type = "RBC USD CREDIT"
